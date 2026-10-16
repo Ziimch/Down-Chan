@@ -33,22 +33,26 @@
 
 ## ✨ Fitur
 
-| 📥 Unduh | 🔄 Konversi |
-|---|---|
-| Video **MP4** atau musik **MP3** | Gambar: **PNG ⇄ JPG ⇄ WEBP** |
-| Kualitas: 128–320 kbps / 360p–4K | Video/audio → **MP3** atau **M4A** |
-| Tempel link atau **Bagikan** dari app lain | Hasil masuk ke folder pilihanmu |
-| Progress, tombol batal, auto-perbarui mesin | Rotasi foto & latar transparan ditangani |
+| 📥 Unduh | 🔄 Konversi | 🎧 Putar & Kelola |
+|---|---|---|
+| **Pratinjau** link: thumbnail, durasi, perkiraan ukuran | Gambar: **PNG ⇄ JPG ⇄ WEBP** | Pemutar mini dengan tombol **🎲 Acak** dan timer tidur |
+| **Antrean** & pilih lagu dari playlist | Perkecil gambar, **gambar → PDF** | **Riwayat** + pencarian, buka / bagikan / hapus |
+| Unduh di **latar belakang** + notifikasi, jeda & lanjut | Video/audio → **MP3 / M4A** | Cover & metadata otomatis di MP3 |
+| Kualitas 128–320 kbps / 360p–4K | **Kompres video**, video → **GIF** | Buang intro/outro/sponsor |
+| **Potong** bagian tertentu, efek *Slowed + reverb* / *Nightcore* / samakan volume | Pilih **banyak file** sekaligus | Subtitle, folder per channel, hanya Wi-Fi, batas kecepatan |
 
-🎨 Tema gelap Material 3 dengan latar bergaya akuarium dan aksen kuning pita.
+🔔 **Pengingat pembaruan:** aplikasi mengecek GitHub Releases saat dibuka (maks. 1x per 12 jam, hemat data) dan memberi tahu bila ada versi baru.
+
+🎨 Tema gelap Material 3 dengan latar akuarium (bisa diganti dari galeri), aksen kuning pita, dan Anna yang ikut bereaksi.
 
 ---
 
 ## ⚠️ Perlu Diketahui
 
 - **Spotify belum didukung.** Link YouTube dan situs lain yang dikenali yt-dlp bisa dipakai.
-- Kalau muncul **error 403**, tekan **Perbarui mesin (yt-dlp)** lalu coba lagi.
-- Konversi video/audio masih **eksperimen**, jadi kabari lewat *Issues* kalau ada yang gagal.
+- Kalau muncul **error 403**, aplikasi otomatis memperbarui yt-dlp sekali. Bisa juga manual lewat **Atur → Perbarui mesin**.
+- Konversi video/audio, kompres, dan GIF memakai ffmpeg bawaan lewat yt-dlp, jadi masih **eksperimen**. Kalau gagal, salin log di **Atur → Salin log** dan kirim lewat *Issues*.
+- Konversi berjalan selama aplikasi terbuka (layar dijaga tetap menyala). Hanya **unduhan** yang berjalan di latar belakang.
 
 <details>
 <summary><b>🛠️ Build dari sumber</b></summary>
@@ -66,6 +70,8 @@ APK ada di `app/build/outputs/apk/`.
 
 **Tanpa PC (GitHub Actions):** repo ini sudah punya workflow di `.github/workflows/build.yml`. Buat *tag* berawalan `v` (misalnya `v1.1`) lewat GitHub, lalu APK otomatis muncul di tab **Releases**. Bisa juga dijalankan manual dari tab **Actions → Build APK → Run workflow**.
 
+> **Penting untuk pengingat pembaruan:** nama *tag* rilis harus berupa nomor versi (mis. `v2.2`) dan lebih besar dari `versionName` di `app/build.gradle.kts`. Lampirkan juga file `.apk` ke rilis supaya tombol "Unduh APK" langsung berfungsi.
+
 Untuk dipublikasikan, ganti `signingConfig` di `app/build.gradle.kts` dengan keystore sendiri.
 
 **Ukuran APK:** sebagian besar berasal dari Python + yt-dlp + ffmpeg yang disalin per ABI, jadi proyek ini hanya menyertakan `arm64-v8a`. Tambahkan `armeabi-v7a` (HP 32-bit) atau `x86_64` (emulator) di `abiFilters` bila perlu.
@@ -74,13 +80,15 @@ Untuk dipublikasikan, ganti `signingConfig` di `app/build.gradle.kts` dengan key
 
 ```
 app/src/main/java/com/example/unduhku/
-├── MainActivity.kt   # UI, tab, alur unduh & konversi
-├── Downloader.kt     # yt-dlp: unduh, progress, batal, update
-├── Converter.kt      # konversi gambar & media
-└── Storage.kt        # simpan ke folder pilihan (SAF)
+├── MainActivity.kt    # UI & lima tab
+├── DownloadService.kt # antrean unduhan di latar belakang
+├── Downloader.kt      # yt-dlp: unduh, pratinjau, update
+├── Converter.kt       # konversi gambar & media
+├── Pemutar.kt         # pemutar musik mini
+└── Prefs.kt           # pengaturan & riwayat
 ```
 
-**Teknologi:** Kotlin · Material 3 · ViewBinding · Coroutines · [youtubedl-android](https://github.com/yausername/youtubedl-android) (yt-dlp + ffmpeg)
+**Teknologi:** Kotlin · Material 3 · ViewBinding · Coroutines (tanpa Room/Coil/Media3, supaya ringan) · [youtubedl-android](https://github.com/yausername/youtubedl-android) (yt-dlp + ffmpeg)
 
 </details>
 
@@ -89,12 +97,12 @@ app/src/main/java/com/example/unduhku/
 
 <br />
 
-- [ ] Unduhan di latar belakang (foreground service)
+- [ ] Pemutar yang tetap jalan di latar belakang (notifikasi media)
 - [ ] Konversi gambar dari link
-- [ ] Pilihan kualitas di tab Konversi
-- [ ] Riwayat unduhan & dukungan playlist
+- [ ] Gabung beberapa audio
+- [ ] Jadwal unduh
 
-Saat ini unduhan berhenti bila aplikasi ditutup, dan kualitas MP3 hasil konversi tetap 192 kbps.
+Kualitas MP3 hasil konversi tetap 192 kbps.
 
 </details>
 
