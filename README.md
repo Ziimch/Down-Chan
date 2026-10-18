@@ -68,11 +68,27 @@ gradle assembleRelease    # APK release (R8, memakai kunci debug)
 
 APK ada di `app/build/outputs/apk/`.
 
-**Tanpa PC (GitHub Actions):** repo ini sudah punya workflow di `.github/workflows/build.yml`. Buat *tag* berawalan `v` (misalnya `v1.1`) lewat GitHub, lalu APK otomatis muncul di tab **Releases**. Bisa juga dijalankan manual dari tab **Actions → Build APK → Run workflow**.
+**Tanpa PC (GitHub Actions):** repo ini sudah punya workflow di `.github/workflows/build.yml`. Buat *tag* berawalan `v` (misalnya `v2.4`) lewat GitHub, lalu APK otomatis muncul di tab **Releases**. Bisa juga dijalankan manual dari tab **Actions → Build APK → Run workflow**.
 
-> **Penting untuk pengingat pembaruan:** nama *tag* rilis harus berupa nomor versi (mis. `v2.2`) dan lebih besar dari `versionName` di `app/build.gradle.kts`. Lampirkan juga file `.apk` ke rilis supaya tombol "Unduh APK" langsung berfungsi.
+Workflow mengerti dua susunan repo: proyek langsung di root, atau repo yang hanya berisi satu file `.zip` proyek (mudah diunggah dari HP). `versionName` aplikasi otomatis diambil dari nama tag, jadi pengingat pembaruan selalu cocok dengan rilis. Lampirkan `.apk` ke rilis supaya tombol "Unduh APK" langsung berfungsi (workflow melakukannya otomatis).
 
-Untuk dipublikasikan, ganti `signingConfig` di `app/build.gradle.kts` dengan keystore sendiri.
+**Kunci tanda tangan (penting agar update bisa menimpa versi lama).** Tanpa kunci tetap, tiap build memakai kunci debug acak, jadi Android menolak memasang versi baru di atas yang lama dan pengguna harus uninstall dulu. Buat satu keystore sekali saja, simpan baik-baik (jangan diunggah ke repo), lalu isi empat *Secrets* di **Settings → Secrets and variables → Actions**:
+
+| Secret | Isi |
+|---|---|
+| `KEYSTORE_BASE64` | isi file `.jks` dalam base64 |
+| `KEYSTORE_PASSWORD` | kata sandi keystore |
+| `KEY_ALIAS` | nama alias kunci |
+| `KEY_PASSWORD` | kata sandi kunci |
+
+```bash
+keytool -genkeypair -v -keystore rilis.jks -alias downchan -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 rilis.jks   # hasilnya ditempel ke KEYSTORE_BASE64
+```
+
+Tidak punya PC? `keytool` bisa dijalankan dari HP lewat **Termux** (`pkg install openjdk-17`, lalu perintah di atas) atau lewat **GitHub Codespaces** di peramban.
+
+Kalau kunci ini hilang, versi berikutnya tidak bisa menimpa versi lama. Jangan pernah membagikannya.
 
 **Ukuran APK:** sebagian besar berasal dari Python + yt-dlp + ffmpeg yang disalin per ABI, jadi proyek ini hanya menyertakan `arm64-v8a`. Tambahkan `armeabi-v7a` (HP 32-bit) atau `x86_64` (emulator) di `abiFilters` bila perlu.
 
@@ -84,7 +100,9 @@ app/src/main/java/com/example/unduhku/
 ├── DownloadService.kt # antrean unduhan di latar belakang
 ├── Downloader.kt      # yt-dlp: unduh, pratinjau, update
 ├── Converter.kt       # konversi gambar & media
-├── Pemutar.kt         # pemutar musik mini
+├── Pemutar.kt         # mesin pemutar musik (satu instance untuk seluruh proses)
+├── MusikService.kt    # notifikasi & kontrol media (layar kunci, headset)
+├── Pembaruan.kt       # pengingat versi baru dari GitHub Releases
 └── Prefs.kt           # pengaturan & riwayat
 ```
 
@@ -97,7 +115,7 @@ app/src/main/java/com/example/unduhku/
 
 <br />
 
-- [ ] Pemutar yang tetap jalan di latar belakang (notifikasi media)
+- [ ] Cari & putar langsung dari YouTube Music (mode "Jelajah")
 - [ ] Konversi gambar dari link
 - [ ] Gabung beberapa audio
 - [ ] Jadwal unduh
